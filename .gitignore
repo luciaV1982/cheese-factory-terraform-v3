@@ -1,0 +1,24 @@
+# === Terraform general ===
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# === Carpetas que NO deben subirse ===
+.terraform/
+.terraform.lock.hcl
+
+# === Archivos de credenciales sensibles ===
+backend.hcl
+*.pem
+*.key
+*.zip
+
+# === Archivos del SO ===
+.DS_Store
+Thumbs.db
