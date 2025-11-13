@@ -9,70 +9,72 @@ data "aws_ami" "al2023" {
   }
 }
 
-# Tres instancias EC2 privadas para The Cheese Factory
 resource "aws_instance" "web" {
   count = 3
 
   ami           = data.aws_ami.al2023.id
   instance_type = local.instance_type
-
-  # Cada instancia en una subnet privada distinta
-  subnet_id = module.vpc.private_subnets[count.index]
-
+  subnet_id     = module.vpc.private_subnets[count.index]
   vpc_security_group_ids      = [aws_security_group.web_sg.id]
   associate_public_ip_address = false
 
   user_data = <<-EOF
-              #!/bin/bash
-              dnf -y install nginx
+    #!/bin/bash
+    dnf -y update
+    #dnf -y install nginx
+    dnf -y install docker
+    #systemctl enable nginx
+    #systemctl start nginx
+    systemctl enable docker
+    systemctl start docker
 
-              cat > /usr/share/nginx/html/index.html << 'HTML'
-              <!DOCTYPE html>
-              <html>
-              <head>
-                <meta charset="UTF-8">
-                <title>The Cheese Factory - ${var.environment}</title>
-                <style>
-                  body {
-                    font-family: Arial, sans-serif;
-                    background: #fff7dc;
-                    color: #333;
-                    text-align: center;
-                    padding-top: 60px;
-                  }
-                  h1 {
-                    font-size: 40px;
-                    margin-bottom: 10px;
-                  }
-                  h2 {
-                    font-size: 24px;
-                    margin-bottom: 30px;
-                  }
-                  p {
-                    font-size: 16px;
-                  }
-                  .card {
-                    display: inline-block;
-                    padding: 20px 30px;
-                    border-radius: 12px;
-                    background: #ffffff;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="card">
-                  <h1>The Cheese Factory</h1>
-                  <h2>Environment: ${var.environment}</h2>
-                  <p>Infraestructura desplegada con Terraform (VPC, ALB, EC2 privadas).</p>
-                </div>
-              </body>
-              </html>
-              HTML
+    # Página personalizada
+    #cat > /usr/share/nginx/html/index.html << 'HTML'
+    #<!DOCTYPE html>
+    #<html>
+    #<head>
+    #  <meta charset="UTF-8">
+    #  <title>The Cheese Factory - ${var.environment}</title>
+    #  <style>
+    #    body {
+    #      font-family: Arial, sans-serif;
+    #      background: #fff7dc;
+    #      color: #333;
+    #      text-align: center;
+    #      padding-top: 60px;
+    #    }
+    #    h1 { font-size: 40px; margin-bottom: 10px; }
+    #    h2 { font-size: 24px; margin-bottom: 30px; }
+    #    p { font-size: 16px; }
+    #    .card {
+    #      display: inline-block;
+    #      padding: 20px 30px;
+    #      border-radius: 12px;
+    #      background: #ffffff;
+    #      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    #    }
+    #  </style>
+    #</head>
+    #<body>
+    #  <div class="card">
+    #    <h1>The Cheese Factory</h1>
+    #    <h2>Environment: ${var.environment}</h2>
+    #    <p>Infraestructura desplegada con Terraform (VPC, ALB, EC2 privadas).</p>
+    #  </div>
+    #</body>
+    #</html>
+    #HTML
 
-              systemctl enable nginx
-              systemctl start nginx
-              EOF
+    # Ejecutar contenedor según índice
+    index=${count.index}
+    if [ "$index" -eq 0 ]; then
+      docker run -d -p 80:80 errm/cheese:wensleydale
+    elif [ "$index" -eq 1 ]; then
+      docker run -d -p 80:80 errm/cheese:cheddar
+    elif [ "$index" -eq 2 ]; then
+      docker run -d -p 80:80 errm/cheese:stilton
+    fi
+  EOF
 
   tags = merge(
     local.common_tags,
@@ -81,7 +83,6 @@ resource "aws_instance" "web" {
     }
   )
 }
-
 # Adjuntar cada instancia al Target Group del ALB
 resource "aws_lb_target_group_attachment" "web_attachments" {
   count            = length(aws_instance.web)

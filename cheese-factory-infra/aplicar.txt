@@ -1,0 +1,4 @@
+bucket_name         = "cheese-factory-terraform-state"
+dynamodb_table_name = "cheese-factory-terraform-locks"
+environment         = "dev" # dev o prod
+my_ip               = "0.0.0.0/0"

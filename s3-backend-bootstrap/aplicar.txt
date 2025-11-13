@@ -1,0 +1,5 @@
+bucket_name         = "cheese-tfstate-global-villalobos"
+dynamodb_table_name = "tf-lock-cheese"
+
+project = "cheese"
+env     = "global"

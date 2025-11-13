@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket         = "cheese-tfstate-global-339712780971"
+    bucket         = "cheese-tfstate-global-villalobos"
     key            = "global/cheese/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "tf-lock-cheese"
